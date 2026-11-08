@@ -21,4 +21,11 @@ export const products = [
         currency: 'USD',
         stock: 2,
     },
+    {
+        id: 'speakers-desktop-computer',
+        name: 'Altavoces para computadora de escritorio',
+        description: 'Altavoces para computadora de escritorio',
+        currency: 'USD',
+        stock: 10,
+    },
 ];
