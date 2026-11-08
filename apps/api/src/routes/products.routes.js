@@ -1,12 +1,40 @@
 import { Router } from 'express';
 import { products } from '../data/products.js';
 
+function normalizeText(text) {
+    return text
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .trim();
+}
+
 export const productsRouter = Router();
 
 productsRouter.get('/', (req, res) => {
-    res.status(200).json({
-        data: products,
-        total: products.length,
+    const { q } = req.query;
+
+    if (q !== undefined && typeof q !== 'string') {
+        return res.status(400).json({
+            error: {
+                code: 'INVALID_SEARCH_QUERY',
+                message: 'El parametro q debe ser un unico texto.',
+            },
+        });
+    }
+
+    const search = normalizeText(q ?? '');
+
+    const filteredProducts = products.filter((product) => {
+        const text = normalizeText(
+            `${product.name} ${product.description}`
+        );
+
+        return text.includes(search);
+    });
+    return res.status(200).json({
+        data: filteredProducts,
+        total: filteredProducts.length,
     });
 });
 
@@ -16,7 +44,7 @@ productsRouter.get('/:id', (req, res) => {
     const product = products.find((item) => item.id === id);
 
     if (!product) {
-        return res.status(400).json({
+        return res.status(404).json({
             error: {
                 code: 'PRODUCT_NOT_FOUND',
                 message: 'Producto no encontrado',
