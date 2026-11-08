@@ -12,17 +12,38 @@ function normalizeText(text) {
 export const productsRouter = Router();
 
 productsRouter.get('/', (req, res) => {
-    const { q } = req.query;
+    const { q, page = '1', limit = '10' } = req.query;
 
     if (q !== undefined && typeof q !== 'string') {
         return res.status(400).json({
             error: {
                 code: 'INVALID_SEARCH_QUERY',
-                message: 'El parametro q debe ser un unico texto.',
+                message: 'El parametro q deber ser un unico texto.',
             },
         });
     }
 
+    const isPositiveInteger = (value) =>
+        typeof value === 'string' &&
+        /^[1-9]\d*$/.test(value) &&
+        Number.isSafeInteger(Number(value));
+
+    if (
+        !isPositiveInteger(page) ||
+        !isPositiveInteger(limit) ||
+        Number(limit) > 100
+    ) {
+        return res.status(400).json({
+            error: {
+                code: 'INVALID_PAGINATION',
+                message:
+                    'page y limit deben ser enteros positivos; limit no puede superar 100.',
+            },
+        });
+    }
+
+    const currentPage = Number(page);
+    const pageSize = Number(limit);
     const search = normalizeText(q ?? '');
 
     const filteredProducts = products.filter((product) => {
@@ -32,9 +53,20 @@ productsRouter.get('/', (req, res) => {
 
         return text.includes(search);
     });
+
+    const total = filteredProducts.length;
+    const start = (currentPage - 1) * pageSize;
+    const paginatedProducts = filteredProducts.slice(
+        start,
+        start + pageSize
+    );
+
     return res.status(200).json({
-        data: filteredProducts,
-        total: filteredProducts.length,
+        data: paginatedProducts,
+        total,
+        page: currentPage,
+        limit: pageSize,
+        totalPages: Math.ceil(total / pageSize),
     });
 });
 
