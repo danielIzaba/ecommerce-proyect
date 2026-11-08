@@ -2,7 +2,8 @@ export const products = [
     {
         id: 'desk-lamp',
         name: 'Lámpara de escritorio',
-        description: 'Lámpara LeD con intensidad ajsutable.',
+        category: 'lighting',
+        description: 'Lámpara LED con intensidad ajustable.',
         priceInCents: 2999,
         currency: 'USD',
         stock: 12,
@@ -10,6 +11,7 @@ export const products = [
     {
         id: 'laptop-stand',
         name: 'Soporte para laptop',
+        category: 'accesories',
         description: 'Soporte de aluminio para escritorio.',
         currency: 'USD',
         stock: 8,
@@ -17,6 +19,7 @@ export const products = [
     {
         id: 'desktop-chair',
         name: 'Silla de escritorio',
+        category: 'furniture',
         description: 'Silla de oficina para escritorio',
         currency: 'USD',
         stock: 2,
@@ -24,6 +27,7 @@ export const products = [
     {
         id: 'speakers-desktop-computer',
         name: 'Altavoces para computadora de escritorio',
+        category: 'electronics',
         description: 'Altavoces para computadora de escritorio',
         currency: 'USD',
         stock: 10,

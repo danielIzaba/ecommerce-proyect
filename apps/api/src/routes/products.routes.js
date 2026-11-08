@@ -12,7 +12,7 @@ function normalizeText(text) {
 export const productsRouter = Router();
 
 productsRouter.get('/', (req, res) => {
-    const { q, page = '1', limit = '10' } = req.query;
+    const { q, category, page = '1', limit = '10' } = req.query;
 
     if (q !== undefined && typeof q !== 'string') {
         return res.status(400).json({
@@ -22,6 +22,20 @@ productsRouter.get('/', (req, res) => {
             },
         });
     }
+
+    if (
+        category != undefined &&
+        (typeof category !== 'string' || category.trim() === '')
+    ) {
+        return res.status(400).json({
+            error: {
+                code: 'INVALID_CATEGORY',
+                message: 'category debe ser un unico texto no vacio.',
+            },
+        });
+    }
+
+    const selectedCategory = category?.trim().toLowerCase();
 
     const isPositiveInteger = (value) =>
         typeof value === 'string' &&
@@ -51,7 +65,13 @@ productsRouter.get('/', (req, res) => {
             `${product.name} ${product.description}`
         );
 
-        return text.includes(search);
+        const matchesSearch = text.includes(search);
+
+        const matchesCategory =
+            selectedCategory === undefined ||
+            product.category === selectedCategory;
+
+        return matchesSearch && matchesCategory;
     });
 
     const total = filteredProducts.length;
