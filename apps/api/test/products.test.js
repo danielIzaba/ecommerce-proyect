@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import request from 'supertest';
 import { app } from '../src/app.js';
 
-test('busca por nombre ignorando mayusculas y tildes', async () => {
+test('filtra antes de aplicar la paginacion', async () => {
     const response = await request(app)
         .get('/api/products')
         .query({
@@ -56,20 +56,15 @@ test('devuelve 404 cuando el producto no existe', async () => {
         response.body.error.code,
         'PRODUCT_NOT_FOUND'
     );
+});
 
-    test('filtra antes de aplicar la paginacion', async () => {
-        const response = await request(app)
-            .get('/api/products')
-            .query({
-                category: 'furniture',
-                q: 'silla',
-                page: 1,
-                limit: 1,
-            })
-            .expect(200);
+test('busca ignorando mayusculas y tildes', async () => {
+    const response = await request(app)
+        .get('/api/products')
+        .query({ q: 'LAMPARA' })
+        .expect(200);
 
-        assert.equal(response.body.total, 1);
-        assert.equal(response.body.data.length, 1);
-        assert.equal(response.body.data[0].id, 'desktop-chair');
-    });
+    assert.equal(response.body.total, 1);
+    assert.equal(response.body.data.length, 1);
+    assert.equal(response.body.data[0].id, 'desk-lamp');
 });
