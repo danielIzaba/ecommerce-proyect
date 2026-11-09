@@ -23,7 +23,6 @@ jobs:
           POSTGRES_USER: ecommerce
           POSTGRES_PASSWORD: ci_test_password
           POSTGRES_DB: ecommerce_test
-
         ports:
           - 5432:5432
         options: >-
@@ -31,32 +30,39 @@ jobs:
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
-  defaults:
+
+    defaults:
       run:
         working-directory: apps/api
 
-  steps:
-    - name: Descargar el repositorio
-      uses: actions/checkout@v7
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@v7
 
-    - name: Configurar Node
-      uses: actions/setup-node@v7
-      with:
-        node-version-file: .node-version
-        cache: npm
-        cache-dependency-path: apps/api/package-lock.json
+      - name: Configurar Node
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: npm
+          cache-dependency-path: apps/api/package-lock.json
 
-    - name: Instalar dependencias
-      run: npm ci
+      - name: Instalar dependencias
+        run: npm ci
 
-    - name: Crear tablas
-      run: |
-        docker exec -i "${{ job.services.postgres.id }}" \
-          psql -U ecommerce -d ecommerce_test -v ON_ERROR_STOP=1 \
-          < db/seeds/001_catalog.sql
+      - name: Crear tablas
+        run: |
+          docker exec -i "${{ job.services.postgres.id }}" \
+            psql -U ecommerce -d ecommerce_test -v ON_ERROR_STOP=1 \
+            < db/migrations/001_create_catalog.sql
 
-    - name: Comprobar conexion desde Node
-      run: node src/db/check-connection.js
+      - name: Cargar datos de demostración
+        run: |
+          docker exec -i "${{ job.services.postgres.id }}" \
+            psql -U ecommerce -d ecommerce_test -v ON_ERROR_STOP=1 \
+            < db/seeds/001_catalog.sql
 
-    - name: Ejecutar pruebas
-      run: npm test
+      - name: Comprobar conexión desde Node
+        run: node src/db/check-connection.js
+
+      - name: Ejecutar pruebas
+        run: npm test
